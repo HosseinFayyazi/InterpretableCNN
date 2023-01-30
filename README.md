@@ -1,57 +1,72 @@
-
-# SincNet
-SincNet is a neural architecture for processing **raw audio samples**. It is a novel Convolutional Neural Network (CNN) that encourages the first convolutional layer to discover more **meaningful filters**. SincNet is based on parametrized sinc functions, which implement band-pass filters.
-
-In contrast to standard CNNs, that learn all elements of each filter, only low and high cutoff frequencies are directly learned from data with the proposed method. This offers a very compact and efficient way to derive a **customized filter bank** specifically tuned for the desired application. 
-
-This project releases a collection of codes and utilities to perform speaker identification with SincNet.
-An example of speaker identification with the TIMIT database is provided. If you are interested in **SincNet applied to speech recognition you can take a look into the PyTorch-Kaldi github repository (https://github.com/mravanelli/pytorch-kaldi).** 
-
-<img src="https://github.com/mravanelli/SincNet/blob/master/SincNet.png" width="400" img align="right">
-
-[Take a look into our video introduction to SincNet](https://www.youtube.com/watch?v=mXQBObRGUgk&feature=youtu.be)
-
-## Cite us
-If you use this code or part of it, please cite us!
-
-*Mirco Ravanelli, Yoshua Bengio, “Speaker Recognition from raw waveform with SincNet”* [Arxiv](http://arxiv.org/abs/1808.00158)
+# Adding Interpretability to CNNs Using Auditory Filter Models
+This repository contains an extended version of SincNet [1] in which some general auditory filter models are added for the Speaker Identification (SID) task, which is presented in "Analyzing the Use of Auditory Filter Models for Making Interpretable Convolutional Neural Networks for Speaker Identification" [Slides] (https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/csicc_2023_pres.pdf). The goal here is understanding hearing models and adapting learning models closely to human hearing, examining the use of some auditory filter models as CNN front-ends and finally evaluating the resulted filter banks in the SID task. In the paper, rectangular, triangular, gammatone, Gaussian and cascaded filter types are selected to examine. 
 
 
-## Prerequisites
-- Linux
-- Python 3.6/2.7
-- pytorch 1.0
-- pysoundfile (``` conda install -c conda-forge pysoundfile```)
-- We also suggest using the anaconda environment.
+## Model Architecture
+One traditional view in the functional level description of the process occurring in the cochlea in the inner ear is that it acts as a frequency analyzer using some specific filter types. This view corresponds to the learning of a meaningful filter bank in the first layer of a CNN. High-level extracted features from these layers are then transferred to the central auditory nervous system in the brain for more complicated operations, which can be simulated using fully connected layers in the last layers of a CNN architecture.
+The architecture used here is the one presented in SincNet. The following figure shows the details of this architecture and its correspondence with the human auditory system. 
 
-## SpeechBrain
-SincNet is implemented in the SpeechBrain (https://speechbrain.github.io/) project as well. We encourage you to take a look into it as well!
-It is an all-in-one pytorch-based speech processing toolkit that currently supports speech recognition, speaker recognition, SLU, speech enhancement, speech separation, multi-microphone signal processing. It is designed to be flexible, easy-to-use, modular, and well documented. [Check it out](https://speechbrain.github.io/).
+<img src="https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/Architecture.png" width="400" img align="right">
 
-## Updates
-Feb, 16 2019:
-- We replaced the old "sinc_conv"  with "SincConv_fast". The latter is 50% faster.
-- In the near future, we plan to support SincNet based speaker-id within the [PyTorch-Kaldi project](https://github.com/mravanelli/pytorch-kaldi) (the current version of the project only supports SincNEt for speech recognition experiments). This will allow users to perform speaker recognition experiments in a faster and much more flexible environment. The current repository will anyway remain as a showcase. 
+## Results and Discussions
+**Time and frequency domains shapes**
+The impulse response and magnitude response of the three filters learned in each of the models are shown here. While audio filter models have a meaningful time domain shape and their magnitude response can be determined explicitly by a center frequency and bandwidth, the standard filters have unfamiliar, noisy shapes with no meaning. This property encourages the use of specific filter types as a strong replacement for standard ones to have a better understanding of the decision made by a CNN model. 
 
-## How to run a TIMIT experiment
+<img src="https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/Responses.png" width="400" img align="right">
+
+**Learned filter bank**
+The learned filter bank in the first layer of examined models is depicted here. The filters operate in very low frequencies are more than in high frequencies. While filters with sharper peaks are placed in lower frequencies, the peaks become shallower at high frequencies. These observations are consistent with the experiments that have been conducted on the filtering function of the human auditory system. The famous Mel-filterbank was inspired by this fact. 
+
+<img src="https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/filterbanks.png" width="400" img align="right">
+
+
+**Center frequencies**
+To compare the distribution of the Mel-filterbanks with those presented here, the histogram of the center frequencies of the different filter banks is depicted here. It can be seen that the overall trend of learned filter banks is as the Mel-scale one, but the importance of frequencies close to 2 kHz is considered less in all models. In addition, the number of filters sensitive to high frequencies is not as low as the Mel-filterbanks. This feature reveals that in a specific application like SID, the fundamental frequency, below 1 kHz frequency, has more impact in distinguishing speakers than the two or three first formants of a speech signal. 
+Moreover, some information related to speaker recognition is spread in higher frequencies. 
+
+<img src="https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/overal_hist.png" width="400" img align="right">
+
+**Quality Factor (QF)**
+Quality Factor or QF, which is the fraction of the center frequency to the bandwidth of a filter, can be used to examine both parameters at the same time. The filters of a Mel-filterbank are designed based on auditory considerations, which have a lower bandwidth at low frequencies and a higher bandwidth at high frequencies. This fraction has a relatively gentle slope for these filters.  The best-fitted line to QFs of each model is considered, and their reflection on this line is depicted in the figure in the following picture. 
+It is seen that the overall trend of QF for all filter types is incremental, and filters at high frequencies are further apart and have higher bandwidth. This property is the same as the Mel-scale with the difference in fitted line slope. The slope of the fitted lines of interpretable filters reveals the importance of higher frequencies in this specific task. 
+The figure also reveals an interesting property of the filter bank appropriate for the SID task. The number of filters in 0 ~ 1.5 kHz and 2.5 ~ 4 kHz frequency bands is more than the others, which demonstrates that these frequency bands create more distinction between different speakers.
+
+<img src="https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/qf.png" width="400" img align="right">
+
+**Frequency analysis from speech production view**
+The unique characteristics of a speaker are encoded during speech production. These features should be involved in the invariant factors in the physiology of the vocal tract. 
+Some interesting findings presented in some researches are as follows: 
+- The function of different articulatory speech organs that make speaker-dependent features lead to non-uniformly distribution of these features in high frequency bands. 
+- glottis information is encoded between 100 Hz and 400 Hz, and 
+- The information of the piriform fossa is encoded between 4 kHz and 5 kHz. 
+
+These facts obviously show that the proper filter bank is completely task-dependent. For example, the first three formants which are encoded in 200 Hz to 3 kHz frequency region, are important in phone recognition while this region has lower importance in the SID task. 
+The following figure shows the histogram of the learned filters of the gammatone model by a smaller bin size. It is seen that most filters operate in 0 ~ 250 Hz where glottis information is encoded. Other filters are operated in high frequencies with a non-uniform distribution and frequencies related to speech formants are not emphasized as much as Mel-filterbanks.
+
+<img src="https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/gamma_hist.png" width="400" img align="right">
+
+
+## How to run?
 Even though the code can be easily adapted to any speech dataset, in the following part of the documentation we provide an example based on the popular TIMIT dataset.
 
-**1. Run TIMIT data preparation.**
+**1. Run TIMIT data preparation**
 
 This step is necessary to store a version of TIMIT in which start and end silences are removed and the amplitude of each speech utterance is normalized. To do it, run the following code:
 
 ``
-python TIMIT_preparation.py $TIMIT_FOLDER $OUTPUT_FOLDER data_lists/TIMIT_all.scp
+python timit_prepare_script.py --in_folder $TIMIT_FOLDER --out_folder $OUTPUT_FOLDER
 ``
 
 where:
 - *$TIMIT_FOLDER* is the folder of the original TIMIT corpus
 - *$OUTPUT_FOLDER* is the folder in which the normalized TIMIT will be stored
-- *data_lists/TIMIT_all.scp* is the list of the TIMIT files used for training/test the speaker id system.
 
-**2. Run the speaker id experiment.**
+In TIMIT, each speaker reads ten phonetically rich sentences, two of which are calibration sentences designed to allow cross-speaker comparisons. Here, these sentences are removed. Five of the eight remaining sentences are used for training, two for validation, and one for testing, which leads to a 630-class classification problem.  
 
-- Modify the *[data]* section of *cfg/SincNet_TIMIT.cfg* file according to your paths. In particular, modify the *data_folder* with the *$OUTPUT_FOLDER* specified during the TIMIT preparation. The other parameters of the config file belong to the following sections:
+**2. Run the speaker id experiment**
+
+- Modify the *[data]* section of *IO/$MODEL_NAME/$FILE.cfg* file according to your paths, where *$MODEL_NAME* is the model name that can be one of the following ones, 'cnn', 'sinc', 'sinc2', 'gamma', 'gauss' and 'gauss_cascade'. 
+In particular, modify the *data_folder* with the *$OUTPUT_FOLDER* specified during the TIMIT preparation. The other parameters of the config file belong to the following sections:
  1. *[windowing]*, that defines how each sentence is split into smaller chunks.
  2. *[cnn]*,  that specifies the characteristics of the CNN architecture.
  3. *[dnn]*,  that specifies the characteristics of the fully-connected DNN architecture following the CNN layers.
@@ -61,61 +76,58 @@ where:
 - Once setup the cfg file, you can run the speaker id experiments using the following command:
 
 ``
-python speaker_id.py --cfg=cfg/SincNet_TIMIT.cfg
+python speaker_id_script.py --cfg $CFG_FILE --resume_epoch $EPOCH_NUMBER --resume_model_path $RESUME_MODEL_PATH --save_path $SAVE_PATH
 ``
 
-The network might take several hours to converge (depending on the speed of your GPU card). In our case, using an *nvidia TITAN X*, the full training took about 24 hours. If you use the code within a cluster is crucial to copy the normalized dataset into the local node, since the current version of the code requires frequent accesses to the stored wav files. Note that several possible optimizations to improve the code speed are not implemented in this version since are out of the scope of this work.
+where:
+- *$CFG_FILE* is the cfg file path
+- *$EPOCH_NUMBER* resumes training from this epoch, which its default value is 0
+- *$RESUME_MODEL_PATH* resumes training from the model with specified path
+- *$SAVE_PATH* is save path of the model
 
 
-**3. Results.**
 
-The results are saved into the *output_folder* specified in the cfg file. In this folder, you can find a file (*res.res*) summarizing training and test error rates. The model *model_raw.pkl* is the SincNet model saved after the last iteration. 
-Using the cfg file specified above, we obtain the following results:
-```
-epoch 0, loss_tr=5.542032 err_tr=0.984189 loss_te=4.996982 err_te=0.969038 err_te_snt=0.919913
-epoch 8, loss_tr=1.693487 err_tr=0.434424 loss_te=2.735717 err_te=0.612260 err_te_snt=0.069264
-epoch 16, loss_tr=0.861834 err_tr=0.229424 loss_te=2.465258 err_te=0.520276 err_te_snt=0.038240
-epoch 24, loss_tr=0.528619 err_tr=0.144375 loss_te=2.948707 err_te=0.534053 err_te_snt=0.062049
-epoch 32, loss_tr=0.362914 err_tr=0.100518 loss_te=2.530276 err_te=0.469060 err_te_snt=0.015152
-epoch 40, loss_tr=0.267921 err_tr=0.076445 loss_te=2.761606 err_te=0.464799 err_te_snt=0.023088
-epoch 48, loss_tr=0.215479 err_tr=0.061406 loss_te=2.737486 err_te=0.453493 err_te_snt=0.010823
-epoch 56, loss_tr=0.173690 err_tr=0.050732 loss_te=2.812427 err_te=0.443322 err_te_snt=0.011544
-epoch 64, loss_tr=0.145256 err_tr=0.043594 loss_te=2.917569 err_te=0.438507 err_te_snt=0.009380
-epoch 72, loss_tr=0.128894 err_tr=0.038486 loss_te=3.009008 err_te=0.438005 err_te_snt=0.019481
-....
-epoch 320, loss_tr=0.033052 err_tr=0.009639 loss_te=4.076542 err_te=0.416710 err_te_snt=0.006494
-epoch 328, loss_tr=0.033344 err_tr=0.010117 loss_te=3.928874 err_te=0.415024 err_te_snt=0.007215
-epoch 336, loss_tr=0.033228 err_tr=0.010166 loss_te=4.030224 err_te=0.410034 err_te_snt=0.005051
-epoch 344, loss_tr=0.033313 err_tr=0.010166 loss_te=4.402949 err_te=0.428691 err_te_snt=0.009380
-epoch 352, loss_tr=0.031828 err_tr=0.009238 loss_te=4.080747 err_te=0.414066 err_te_snt=0.006494
-epoch 360, loss_tr=0.033095 err_tr=0.009600 loss_te=4.254683 err_te=0.419954 err_te_snt=0.005772
-``` 
-The converge is initially very fast (see the first 30 epochs). After that the performance improvement decreases and oscillations into the sentence error rate performance appear. Despite these oscillations an average improvement trend can be observed for the subsequent epochs. In this experiment, we stopped our training  at epoch 360.
+**3. Results**
+
+The results are saved into the *output_folder* specified in the cfg file. In this folder, you can find a file (*res.res*) summarizing training and test error rates. The model *saved_model.pth* is the model saved after the last iteration and the model *saved_model.pth_best.pth* is the model with best Classification Error Rate on validation data.
+
 The fields of the res.res file have the following meaning:
 - loss_tr: is the average training loss (i.e., cross-entropy function) computed at every frame.
 - err_tr: is the classification error (measured at frame level) of the training data. Note that we split the speech signals into chunks of 200ms with 10ms overlap. The error is averaged for all the chunks of the training dataset.
 - loss_te is the average test loss (i.e., cross-entropy function) computed at every frame.
 - err_te: is the classification error (measured at frame level) of the test data.
-- err_te_snt: is the classification error (measured at sentence level) of the test data. Note that we split the speech signal into chunks of 200ms with 10ms overlap. For each chunk, our SincNet performs a prediction over the set of speakers. To compute this classification error rate we averaged the predictions and, for each sentence, we voted for the speaker with the highest average probability.
+- err_te_snt: is the classification error (measured at sentence level) of the test data. Note that we split the speech signal into chunks of 200ms with 10ms overlap. For each chunk, the model performs a prediction over the set of speakers. To compute this classification error rate the predictions are averaged and, for each sentence, the speaker with the highest average probability is voted.
 
-[You can find our trained model for TIMIT here.](https://bitbucket.org/mravanelli/sincnet_models/)
+**4. Evaluation**
 
-## Where SincNet is implemented?
-To take a look into the SincNet implementation you should open the file *dnn_models.py* and read the classes *SincNet*, *sinc_conv* and the function *sinc*.
+The final model obtained from training process can be evaluated on test data using the following command:
 
-## How to use SincNet with a different dataset?
-In this repository, we used the TIMIT dataset as a tutorial to show how SincNet works. 
-With the current version of the code, you can easily use a different corpus. To do it you should provide in input the corpora-specific input files (in wav format) and your own labels. You should thus modify the paths into the *.scp files you find in the data_lists folder. 
+``
+python test_eval_script.py --cfg_file $CFG_FILE --save_path $SAVE_PATH
+``
 
-To assign to each sentence the right label, you also have to modify the dictionary "*TIMIT_labels.npy*". 
-The labels are specified within a python dictionary that contains sentence ids as keys (e.g., "*si1027*") and speaker_ids as values. Each speaker_id is an integer, ranging from 0 to N_spks-1. In the TIMIT dataset, you can easily retrieve the speaker id from the path (e.g., *train/dr1/fcjf0/si1027.wav* is the sentence_id "*si1027*" uttered by the speaker "*fcjf0*"). For other datasets, you should be able to retrieve in such a way this dictionary containing pairs of speakers and sentence ids.
+where:
+- *$CFG_FILE* is the cfg file path
+- *$SAVE_PATH* is save path of the model
 
-You should then modify the config file (*cfg/SincNet_TIMIT.cfg*) according to your new paths. Remember also to change the field "*class_lay=462*" according to the number of speakers N_spks you have in your dataset.
+**5. Visualizing the results**
+For plotting the images shown in "Results and Discussions" section, use the following script:
 
-**The version of the Librispeech dataset used in the paper is available upon request**. In our work, we have used only 12-15 seconds of training material for each speaker and we processed the original librispeech sentences in order to perform amplitude normalization. Moreover, we used a simple energy-based VAD to avoid silences at the beginning and end of each sentence as well as to split in multiple chunks the sentences that contain longer silence
+``
+python plot_filter_script.py --model_name $MODEL_NAME --model_path $MODEL_PATH --cfg_file $CFG_FILE --out_path $OUT_PATH
+``
+
+where:
+- *$MODEL_NAME* is one of the models, 'CNN', 'Sinc', 'Sinc2', 'Gamma', 'Gauss' and 'Gauss_Cascade'
+- *$MODEL_PATH* is save path of the model
+- *$CFG_FILE* is the cfg file path
+- *$OUT_PATH* is save path of the resulted figures
 
 
 
-## References
+## Main References
 
-[1] Mirco Ravanelli, Yoshua Bengio, “Speaker Recognition from raw waveform with SincNet” [Arxiv](http://arxiv.org/abs/1808.00158)
+[1] Mirco Ravanelli, Yoshua Bengio, “Speaker Recognition from raw waveform with SincNet”
+[2] Erfan Loweimi, Peter Bell, Steve Renals, “On Learning Interpretable CNNs with Parametric Modulated Kernel-Based Filters”
+[3] Lyon, Richard F., “Human and machine hearing: extracting meaning from sound”
+[4] Hossein Fayyazi, Yasser Shekofteh, “Analyzing the Use of Auditory Filter Models for Making Interpretable Convolutional Neural Networks for Speaker Identification” 
