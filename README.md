@@ -134,6 +134,9 @@ where:
 ## Main References
 
 [1] Mirco Ravanelli, Yoshua Bengio, “Speaker Recognition from raw waveform with SincNet”
+
 [2] Erfan Loweimi, Peter Bell, Steve Renals, “On Learning Interpretable CNNs with Parametric Modulated Kernel-Based Filters”
+
 [3] Lyon, Richard F., “Human and machine hearing: extracting meaning from sound”
+
 [4] Hossein Fayyazi, Yasser Shekofteh, “Analyzing the Use of Auditory Filter Models for Making Interpretable Convolutional Neural Networks for Speaker Identification” 
