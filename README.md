@@ -1,37 +1,37 @@
 # Adding Interpretability to CNNs Using Auditory Filter Models
-This repository contains an extended version of SincNet [1] in which some general auditory filter models are added for the Speaker Identification (SID) task, which is presented in "Analyzing the Use of Auditory Filter Models for Making Interpretable Convolutional Neural Networks for Speaker Identification" [Slides] (https://github.com/HosseinFayyazi/SincNet/blob/master/IO/imgs/rsc/csicc_2023_pres.pdf). The goal here is understanding hearing models and adapting learning models closely to human hearing, examining the use of some auditory filter models as CNN front-ends and finally evaluating the resulted filter banks in the SID task. In the paper, rectangular, triangular, gammatone, Gaussian and cascaded filter types are selected to examine. 
+This repository contains an extended version of SincNet [1] in which some general auditory filter models are added for the Speaker Identification (SID) task, which is presented in "Analyzing the Use of Auditory Filter Models for Making Interpretable Convolutional Neural Networks for Speaker Identification" [Slides] (https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/csicc_2023_pres.pdf). The goal here is understanding hearing models and adapting learning models closely to human hearing, examining the use of some auditory filter models as CNN front-ends and finally evaluating the resulted filter banks in the SID task. In the paper, rectangular, triangular, gammatone, Gaussian and cascaded filter types are selected to examine. 
 
 
 ## Model Architecture
 One traditional view in the functional level description of the process occurring in the cochlea in the inner ear is that it acts as a frequency analyzer using some specific filter types. This view corresponds to the learning of a meaningful filter bank in the first layer of a CNN. High-level extracted features from these layers are then transferred to the central auditory nervous system in the brain for more complicated operations, which can be simulated using fully connected layers in the last layers of a CNN architecture.
 The architecture used here is the one presented in SincNet. The following figure shows the details of this architecture and its correspondence with the human auditory system. 
 
-<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/Architecture.png" width="400" img align="right">
+<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/Architecture.png" width="800" img align="center">
 
 ## Results and Discussions
 **Time and frequency domains shapes**
 The impulse response and magnitude response of the three filters learned in each of the models are shown here. While audio filter models have a meaningful time domain shape and their magnitude response can be determined explicitly by a center frequency and bandwidth, the standard filters have unfamiliar, noisy shapes with no meaning. This property encourages the use of specific filter types as a strong replacement for standard ones to have a better understanding of the decision made by a CNN model. 
 
-<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/Responses.png" width="400" img align="right">
+<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/Responses.png" width="800" img align="center">
 
 **Learned filter bank**
 The learned filter bank in the first layer of examined models is depicted here. The filters operate in very low frequencies are more than in high frequencies. While filters with sharper peaks are placed in lower frequencies, the peaks become shallower at high frequencies. These observations are consistent with the experiments that have been conducted on the filtering function of the human auditory system. The famous Mel-filterbank was inspired by this fact. 
 
-<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/filterbanks.png" width="400" img align="right">
+<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/filterbanks.png" width="800" img align="center">
 
 
 **Center frequencies**
 To compare the distribution of the Mel-filterbanks with those presented here, the histogram of the center frequencies of the different filter banks is depicted here. It can be seen that the overall trend of learned filter banks is as the Mel-scale one, but the importance of frequencies close to 2 kHz is considered less in all models. In addition, the number of filters sensitive to high frequencies is not as low as the Mel-filterbanks. This feature reveals that in a specific application like SID, the fundamental frequency, below 1 kHz frequency, has more impact in distinguishing speakers than the two or three first formants of a speech signal. 
 Moreover, some information related to speaker recognition is spread in higher frequencies. 
 
-<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/overal_hist.png" width="400" img align="right">
+<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/overal_hist.png" width="800" img align="center">
 
 **Quality Factor (QF)**
 Quality Factor or QF, which is the fraction of the center frequency to the bandwidth of a filter, can be used to examine both parameters at the same time. The filters of a Mel-filterbank are designed based on auditory considerations, which have a lower bandwidth at low frequencies and a higher bandwidth at high frequencies. This fraction has a relatively gentle slope for these filters.  The best-fitted line to QFs of each model is considered, and their reflection on this line is depicted in the figure in the following picture. 
 It is seen that the overall trend of QF for all filter types is incremental, and filters at high frequencies are further apart and have higher bandwidth. This property is the same as the Mel-scale with the difference in fitted line slope. The slope of the fitted lines of interpretable filters reveals the importance of higher frequencies in this specific task. 
 The figure also reveals an interesting property of the filter bank appropriate for the SID task. The number of filters in 0 ~ 1.5 kHz and 2.5 ~ 4 kHz frequency bands is more than the others, which demonstrates that these frequency bands create more distinction between different speakers.
 
-<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/qf.png" width="400" img align="right">
+<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/qf.png" width="800" img align="center">
 
 **Frequency analysis from speech production view**
 The unique characteristics of a speaker are encoded during speech production. These features should be involved in the invariant factors in the physiology of the vocal tract. 
@@ -43,7 +43,7 @@ Some interesting findings presented in some researches are as follows:
 These facts obviously show that the proper filter bank is completely task-dependent. For example, the first three formants which are encoded in 200 Hz to 3 kHz frequency region, are important in phone recognition while this region has lower importance in the SID task. 
 The following figure shows the histogram of the learned filters of the gammatone model by a smaller bin size. It is seen that most filters operate in 0 ~ 250 Hz where glottis information is encoded. Other filters are operated in high frequencies with a non-uniform distribution and frequencies related to speech formants are not emphasized as much as Mel-filterbanks.
 
-<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/gamma_hist.png" width="400" img align="right">
+<img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/gamma_hist.png" width="800" img align="center">
 
 
 ## How to run?
