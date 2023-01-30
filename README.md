@@ -10,23 +10,27 @@ The architecture used here is the one presented in SincNet. The following figure
 
 ## Results and Discussions
 **Time and frequency domains shapes**
+
 The impulse response and magnitude response of the three filters learned in each of the models are shown here. While audio filter models have a meaningful time domain shape and their magnitude response can be determined explicitly by a center frequency and bandwidth, the standard filters have unfamiliar, noisy shapes with no meaning. This property encourages the use of specific filter types as a strong replacement for standard ones to have a better understanding of the decision made by a CNN model. 
 
 <img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/Responses.png" width="800" img align="center">
 
 **Learned filter bank**
+
 The learned filter bank in the first layer of examined models is depicted here. The filters operate in very low frequencies are more than in high frequencies. While filters with sharper peaks are placed in lower frequencies, the peaks become shallower at high frequencies. These observations are consistent with the experiments that have been conducted on the filtering function of the human auditory system. The famous Mel-filterbank was inspired by this fact. 
 
 <img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/filterbanks.png" width="800" img align="center">
 
 
 **Center frequencies**
+
 To compare the distribution of the Mel-filterbanks with those presented here, the histogram of the center frequencies of the different filter banks is depicted here. It can be seen that the overall trend of learned filter banks is as the Mel-scale one, but the importance of frequencies close to 2 kHz is considered less in all models. In addition, the number of filters sensitive to high frequencies is not as low as the Mel-filterbanks. This feature reveals that in a specific application like SID, the fundamental frequency, below 1 kHz frequency, has more impact in distinguishing speakers than the two or three first formants of a speech signal. 
 Moreover, some information related to speaker recognition is spread in higher frequencies. 
 
 <img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/overal_hist.png" width="400" img align="center">
 
 **Quality Factor (QF)**
+
 Quality Factor or QF, which is the fraction of the center frequency to the bandwidth of a filter, can be used to examine both parameters at the same time. The filters of a Mel-filterbank are designed based on auditory considerations, which have a lower bandwidth at low frequencies and a higher bandwidth at high frequencies. This fraction has a relatively gentle slope for these filters.  The best-fitted line to QFs of each model is considered, and their reflection on this line is depicted in the figure in the following picture. 
 It is seen that the overall trend of QF for all filter types is incremental, and filters at high frequencies are further apart and have higher bandwidth. This property is the same as the Mel-scale with the difference in fitted line slope. The slope of the fitted lines of interpretable filters reveals the importance of higher frequencies in this specific task. 
 The figure also reveals an interesting property of the filter bank appropriate for the SID task. The number of filters in 0 ~ 1.5 kHz and 2.5 ~ 4 kHz frequency bands is more than the others, which demonstrates that these frequency bands create more distinction between different speakers.
@@ -34,6 +38,7 @@ The figure also reveals an interesting property of the filter bank appropriate f
 <img src="https://github.com/HosseinFayyazi/InterpretableCNN/blob/master/IO/imgs/rsc/qf.png" width="400" img align="center">
 
 **Frequency analysis from speech production view**
+
 The unique characteristics of a speaker are encoded during speech production. These features should be involved in the invariant factors in the physiology of the vocal tract. 
 Some interesting findings presented in some researches are as follows: 
 - The function of different articulatory speech organs that make speaker-dependent features lead to non-uniformly distribution of these features in high frequency bands. 
@@ -111,6 +116,7 @@ where:
 - *$SAVE_PATH* is save path of the model
 
 **5. Visualizing the results**
+
 For plotting the images shown in "Results and Discussions" section, use the following script:
 
 ``
